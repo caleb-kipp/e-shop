@@ -1,0 +1,853 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ShopPlus – Modern E‑commerce Demo</title>
+  <meta name="description" content="A fully featured e‑commerce frontend + mock backend in one file: search with autocomplete, wishlist, cart (localStorage), product modal with reviews, carousels, order tracking, authentication, newsletters, accessibility and SEO touches." />
+  <meta name="theme-color" content="#0ea5e9" />
+  <meta name="robots" content="index,follow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b1020;             /* dark indigo */
+      --panel:#0f162e;
+      --soft:#101936;
+      --muted:#8aa0d1;
+      --brand:#22d3ee;          /* cyan */
+      --brand-2:#38bdf8;        /* sky */
+      --text:#e5edff;
+      --ok:#10b981;             /* green */
+      --warn:#f59e0b;           /* amber */
+      --danger:#ef4444;         /* red */
+      --card:#0e142c;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --radius:1.25rem;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji','Segoe UI Emoji';
+      color:var(--text); background:linear-gradient(180deg, #0a0f1f 0%, #0b1226 40%, #0d1430 100%);
+    }
+    a{color:inherit; text-decoration:none}
+    button{font:inherit; cursor:pointer}
+    img{max-width:100%; display:block}
+    .container{width:min(1200px, 94%); margin-inline:auto}
+    .grid{display:grid; gap:1rem}
+    .row{display:flex; gap:.75rem; flex-wrap:wrap}
+    .pill{padding:.25rem .6rem; border-radius:999px; background:#0b1538; color:var(--muted); font-size:.75rem}
+    .btn{padding:.7rem 1rem; border:none; border-radius:.85rem; background:linear-gradient(135deg, var(--brand), var(--brand-2)); color:#00111a; font-weight:700; box-shadow:var(--shadow)}
+    .btn.secondary{background:#121a37; color:var(--text); border:1px solid #22305a}
+    .btn.ghost{background:transparent; border:1px solid #2a3b6e; color:var(--text)}
+    .btn.icon{display:inline-flex; align-items:center; gap:.5rem}
+    .btn.small{padding:.45rem .7rem; border-radius:.7rem; font-weight:600}
+    .badge{display:inline-flex; align-items:center; gap:.25rem; font-size:.7rem; padding:.25rem .5rem; border:1px solid #284077; border-radius:.7rem; color:#a9c4ff}/* Topbar */
+header.topbar{position:sticky; top:0; z-index:50; backdrop-filter:blur(8px); background:rgba(5,9,22,.65); border-bottom:1px solid #172550}
+.top{display:flex; align-items:center; justify-content:space-between; padding:.7rem 0}
+.brand{display:flex; align-items:center; gap:.6rem; font-weight:800; letter-spacing:.3px}
+.brand .logo{width:36px; height:36px; background:radial-gradient(circle at 30% 30%, #7dd3fc, #06b6d4 70%); border-radius:12px; box-shadow:0 6px 20px rgba(34,211,238,.4)}
+.nav{display:flex; align-items:center; gap:.5rem}
+.nav a{padding:.55rem .8rem; border-radius:.7rem; color:#c7d6ff}
+.nav a:hover{background:#101b3b}
+
+/* Search w/ autocomplete */
+.searchbox{position:relative; flex:1; max-width:520px}
+.searchbox input{width:100%; padding:.8rem 2.7rem .8rem .9rem; border-radius:.9rem; border:1px solid #24335f; color:var(--text); background:#0c1738}
+.searchbox .icon{position:absolute; right:.6rem; top:50%; transform:translateY(-50%); opacity:.75}
+.autocomplete{position:absolute; left:0; right:0; top:110%; background:#0b1535; border:1px solid #24335f; border-radius:.9rem; box-shadow:var(--shadow); display:none; max-height:320px; overflow:auto}
+.autocomplete button{display:block; width:100%; text-align:left; padding:.6rem .75rem; background:transparent; border:none; color:#cfe3ff}
+.autocomplete button:hover{background:#0f1f48}
+
+/* Hero (big image left 50% + 4 small stacked 2x2 right at 40%) */
+.hero{margin-top:1rem}
+.hero-grid{display:grid; grid-template-columns:1.2fr .95fr; gap:1rem}
+.hero-left{position:relative; aspect-ratio:16/9; border-radius:var(--radius); overflow:hidden}
+.hero-left img{width:100%; height:100%; object-fit:cover}
+.hero-overlay{position:absolute; inset:auto 0 0 0; padding:1rem; background:linear-gradient(180deg, transparent, rgba(5,10,25,.75))}
+.hero-right{display:grid; grid-template-columns:1fr 1fr; gap:1rem}
+.card{background:var(--card); border:1px solid #1a2a55; border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden}
+.card .content{padding:1rem}
+.card .title{font-weight:700}
+.card .helper{color:#a8b8e8; font-size:.9rem; margin:.25rem 0 .7rem}
+
+/* Category containers (Men / Women, one big + four small) */
+.cat-grid{display:grid; grid-template-columns:1.3fr 1fr; gap:1rem}
+.cat-left{position:relative; border-radius:var(--radius); overflow:hidden}
+.cat-right{display:grid; grid-template-columns:1fr 1fr; gap:1rem}
+.hover-zoom img{transition:transform .5s ease}
+.hover-zoom:hover img{transform:scale(1.05)}
+
+/* Product cards */
+.products{margin-top:2rem}
+.product-grid{display:grid; grid-template-columns:repeat(5, 1fr); gap:1rem}
+@media (max-width:1100px){.product-grid{grid-template-columns:repeat(4,1fr)}}
+@media (max-width:900px){.product-grid{grid-template-columns:repeat(3,1fr)} .hero-grid{grid-template-columns:1fr} .cat-grid{grid-template-columns:1fr}}
+@media (max-width:640px){.product-grid{grid-template-columns:repeat(2,1fr)}}
+.p-card{background:var(--card); border:1px solid #1c2a57; border-radius:1.1rem; overflow:hidden; display:flex; flex-direction:column}
+.p-thumb{aspect-ratio:1/1; background:#0a1433; display:grid; place-items:center}
+.p-body{padding:.8rem}
+.p-title{font-weight:700; font-size:.95rem; line-height:1.2}
+.p-meta{display:flex; align-items:center; justify-content:space-between; color:#a3b4e5; font-size:.85rem; margin:.35rem 0}
+.price{font-weight:800}
+.actions{display:flex; gap:.5rem}
+
+/* Sections */
+section{margin:2.2rem 0}
+section header{display:flex; align-items:center; justify-content:space-between; margin-bottom:.8rem}
+section h2{margin:0; font-size:1.4rem}
+
+/* Modal */
+.product-modal{position:fixed; inset:0; display:none; background:rgba(2,6,23,.65); backdrop-filter:blur(8px); align-items:center; justify-content:center; z-index:100}
+.product-modal.open{display:flex}
+.modal-content{background:var(--panel); width:min(1100px, 94%); border-radius:1.2rem; border:1px solid #1a2a55; box-shadow:var(--shadow); max-height:88vh; overflow:auto}
+.close-btn{position:sticky; top:.75rem; margin: .75rem .75rem 0 auto; background:#0f1f47; color:var(--text); border:none; border-radius:.8rem; width:40px; height:40px}
+.modal-inner{display:grid; grid-template-columns:1.1fr .9fr; gap:1rem; padding:0 1rem 1rem}
+.modal-left{position:relative}
+.viewer{aspect-ratio:4/3; background:#0a1435; border-radius:1rem; overflow:hidden; display:grid; place-items:center; border:1px solid #1c2a57}
+.viewer img{width:100%; height:100%; object-fit:cover}
+.thumbs{display:flex; gap:.5rem; margin-top:.5rem; overflow:auto}
+.thumbs img{width:70px; height:70px; object-fit:cover; border-radius:.6rem; border:2px solid transparent}
+.thumbs img.active{border-color:var(--brand)}
+.related-carousel{margin-top:1rem; border-top:1px solid #1c2a57; padding-top:.75rem}
+.carousel-row{display:flex; gap:.6rem; overflow-x:auto; scroll-snap-type:x mandatory}
+.carousel-item{min-width:150px; background:#0e1636; border:1px solid #1c2a57; border-radius:.8rem; overflow:hidden; scroll-snap-align:start}
+.carousel-controls{display:flex; gap:.5rem; justify-content:flex-end; margin:.4rem 0}
+.carousel-controls button{border:1px solid #1f2f60; background:#0e1738; color:#cfe3ff; border-radius:.6rem; padding:.3rem .6rem}
+.modal-right .title{font-size:1.3rem; font-weight:800}
+.variant-row{display:flex; gap:.5rem; flex-wrap:wrap}
+.variant{border:1px solid #2a3b6e; padding:.35rem .6rem; border-radius:.6rem; background:#0c1536}
+.qty{display:flex; align-items:center; gap:.4rem}
+.qty input{width:64px; padding:.4rem; border-radius:.5rem; border:1px solid #2a3b6e; background:#0c1536; color:var(--text)}
+.policy{font-size:.9rem; color:#9eb2e8}
+.accordion{border:1px solid #1b2a57; border-radius:1rem; overflow:hidden}
+.accordion summary{cursor:pointer; list-style:none; padding:.7rem 1rem; background:#0d183a; border-bottom:1px solid #1b2a57; font-weight:600}
+.accordion .inner{padding:1rem}
+
+/* Reviews */
+.reviews{margin-top:1rem; border-top:1px solid #1b2a57; padding-top:1rem}
+.review{padding:.6rem; border:1px solid #1b2a57; border-radius:.8rem; background:#0c1637; margin:.5rem 0}
+
+/* Auth + Captcha + 2FA */
+.auth-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1rem}
+@media (max-width:900px){.auth-grid{grid-template-columns:1fr}}
+.field{display:grid; gap:.35rem}
+.field input{padding:.7rem; border-radius:.7rem; border:1px solid #24335f; background:#0c1738; color:var(--text)}
+
+.section-note{color:#b3c6ff; font-size:.92rem}
+footer{margin-top:3rem; border-top:1px solid #1a2a55; padding:2rem 0; color:#9fb5ef}
+.trust{display:flex; gap:.5rem; flex-wrap:wrap}
+.trust img{height:26px; filter:grayscale(100%); opacity:.85}
+
+/* Toasts */
+.toast{position:fixed; bottom:1rem; left:50%; transform:translateX(-50%); background:#0b173b; border:1px solid #25407a; color:#cfe3ff; padding:.6rem .9rem; border-radius:.7rem; display:none; box-shadow:var(--shadow); z-index:120}
+.toast.show{display:block}
+
+/* Accessibility helpers */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Helper chips */
+.chips{display:flex; gap:.5rem; flex-wrap:wrap}
+
+  </style>
+</head>
+<body>
+  <header class="topbar" role="banner">
+    <div class="container top" aria-label="Top navigation">
+      <div class="brand" aria-label="ShopPlus home">
+        <div class="logo" aria-hidden="true"></div>
+        <a href="#" aria-label="Home">ShopPlus</a>
+      </div>
+      <nav class="nav" aria-label="Primary">
+        <a href="#men">Men</a>
+        <a href="#women">Women</a>
+        <a href="#new">New</a>
+        <a href="#best">Best Sellers</a>
+        <a href="#offers">Special Offers</a>
+      </nav>
+      <div class="searchbox" role="search">
+        <label for="q" class="sr-only">Search products</label>
+        <input id="q" name="q" placeholder="Search products… (try: jacket, sneakers)" aria-autocomplete="list" aria-controls="acList" aria-expanded="false" autocomplete="off" />
+        <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 21l-4.35-4.35" stroke="#9fb3ea" stroke-width="2" stroke-linecap="round"/><circle cx="10.5" cy="10.5" r="7.5" stroke="#9fb3ea" stroke-width="2"/></svg>
+        <div class="autocomplete" id="acList" role="listbox" aria-label="Search suggestions"></div>
+      </div>
+      <div class="row" aria-label="Quick actions">
+        <button class="btn small ghost" id="btnWishlist" aria-label="Open wishlist">❤ <span id="wishCount" class="pill" aria-label="Wishlist count">0</span></button>
+        <button class="btn small" id="btnCart" aria-label="Open cart">🛒 <span id="cartCount" class="pill" aria-label="Cart count">0</span></button>
+      </div>
+    </div>
+  </header>  <main class="container" id="main">
+    <!-- HERO: big left image (50%), four small cards (2×2) at ~40% -->
+    <section class="hero" aria-label="Featured hero">
+      <div class="hero-grid">
+        <div class="hero-left hover-zoom" aria-live="polite">
+          <img id="heroImg" alt="Featured collection" loading="eager" src="https://picsum.photos/1200/675?random=11"/>
+          <div class="hero-overlay">
+            <div class="row" style="justify-content:space-between; align-items:end">
+              <div>
+                <div class="badge">New season</div>
+                <h1 style="margin:.25rem 0">Elevate Your Everyday</h1>
+                <p class="section-note">Premium fabrics, precise fits, planet‑friendly packaging.</p>
+                <div class="row">
+                  <a href="#new" class="btn icon" aria-label="Shop new arrivals">Shop New →</a>
+                  <a href="#best" class="btn secondary" aria-label="Browse best sellers">Best Sellers</a>
+                </div>
+              </div>
+              <div class="chips">
+                <span class="pill">Free returns</span>
+                <span class="pill">2‑year warranty</span>
+                <span class="pill">Carbon‑neutral</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="hero-right">
+          <!-- four small cards 2×2 -->
+          <article class="card hover-zoom">
+            <img src="https://picsum.photos/600/400?random=21" alt="Minimal sneakers" loading="lazy"/>
+            <div class="content">
+              <div class="title">Minimal Sneakers</div>
+              <div class="helper">Perfect cushioning. Everyday comfort.</div>
+              <button class="btn small" data-cta="cat" data-cat="sneakers">Shop Sneakers</button>
+            </div>
+          </article>
+          <article class="card hover-zoom">
+            <img src="https://picsum.photos/600/400?random=22" alt="Smart jackets" loading="lazy"/>
+            <div class="content">
+              <div class="title">Smart Jackets</div>
+              <div class="helper">Weather‑ready, style‑first layers.</div>
+              <button class="btn small" data-cta="cat" data-cat="jackets">Shop Jackets</button>
+            </div>
+          </article>
+          <article class="card hover-zoom">
+            <img src="https://picsum.photos/600/400?random=23" alt="Everyday tees" loading="lazy"/>
+            <div class="content">
+              <div class="title">Everyday Tees</div>
+              <div class="helper">Airy, soft, responsibly sourced.</div>
+              <button class="btn small" data-cta="cat" data-cat="tshirts">Shop Tees</button>
+            </div>
+          </article>
+          <article class="card hover-zoom">
+            <img src="https://picsum.photos/600/400?random=24" alt="Accessories" loading="lazy"/>
+            <div class="content">
+              <div class="title">Accessories</div>
+              <div class="helper">Finish the look. Built to last.</div>
+              <button class="btn small" data-cta="cat" data-cat="accessories">Shop Accessories</button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section><!-- Men / Women containers (one big + four small) with hover effects -->
+<section id="men" aria-label="Men collection">
+  <header>
+    <h2>Men</h2>
+    <div class="row"><span class="badge">Tailored fits</span><span class="badge">Work & weekend</span></div>
+  </header>
+  <div class="cat-grid">
+    <a class="cat-left hover-zoom" href="#" data-cta="cat" data-cat="men">
+      <img src="https://picsum.photos/1200/800?random=31" alt="Men featured" loading="lazy"/>
+      <div class="hero-overlay"><button class="btn">Explore Men</button></div>
+    </a>
+    <div class="cat-right">
+      <a class="card hover-zoom" href="#" data-cta="cat" data-cat="men-jackets"><img src="https://picsum.photos/600/400?random=32" alt="Men jackets"/></a>
+      <a class="card hover-zoom" href="#" data-cta="cat" data-cat="men-sneakers"><img src="https://picsum.photos/600/400?random=33" alt="Men sneakers"/></a>
+      <a class="card hover-zoom" href="#" data-cta="cat" data-cat="men-tees"><img src="https://picsum.photos/600/400?random=34" alt="Men tees"/></a>
+      <a class="card hover-zoom" href="#" data-cta="cat" data-cat="men-accessories"><img src="https://picsum.photos/600/400?random=35" alt="Men accessories"/></a>
+    </div>
+  </div>
+</section>
+
+<section id="women" aria-label="Women collection">
+  <header>
+    <h2>Women</h2>
+    <div class="row"><span class="badge">Fluid silhouettes</span><span class="badge">Elevated basics</span></div>
+  </header>
+  <div class="cat-grid">
+    <a class="cat-left hover-zoom" href="#" data-cta="cat" data-cat="women">
+      <img src="https://picsum.photos/1200/800?random=41" alt="Women featured" loading="lazy"/>
+      <div class="hero-overlay"><button class="btn">Explore Women</button></div>
+    </a>
+    <div class="cat-right">
+      <a class="card hover-zoom" href="#" data-cta="cat" data-cat="women-jackets"><img src="https://picsum.photos/600/400?random=42" alt="Women jackets"/></a>
+      <a class="card hover-zoom" href="#" data-cta="cat" data-cat="women-sneakers"><img src="https://picsum.photos/600/400?random=43" alt="Women sneakers"/></a>
+      <a class="card hover-zoom" href="#" data-cta="cat" data-cat="women-tees"><img src="https://picsum.photos/600/400?random=44" alt="Women tees"/></a>
+      <a class="card hover-zoom" href="#" data-cta="cat" data-cat="women-accessories"><img src="https://picsum.photos/600/400?random=45" alt="Women accessories"/></a>
+    </div>
+  </div>
+</section>
+
+<!-- Hooked sections from DB (likes, sales, date, discount) -->
+<section id="new" aria-label="New arrivals">
+  <header><h2>New Arrivals</h2><a href="#" class="btn small secondary" data-cta="section" data-section="new">View all</a></header>
+  <div class="product-grid" id="gridNew"></div>
+</section>
+<section id="best" aria-label="Best sellers">
+  <header><h2>Best Sellers</h2><a href="#" class="btn small secondary" data-cta="section" data-section="best">View all</a></header>
+  <div class="product-grid" id="gridBest"></div>
+</section>
+<section id="offers" aria-label="Special offers">
+  <header><h2>Special Offers</h2><a href="#" class="btn small secondary" data-cta="section" data-section="offers">View all</a></header>
+  <div class="product-grid" id="gridOffers"></div>
+</section>
+<section id="liked" aria-label="Most liked">
+  <header><h2>Most Liked</h2><a href="#" class="btn small secondary" data-cta="section" data-section="liked">View all</a></header>
+  <div class="product-grid" id="gridLiked"></div>
+</section>
+
+<!-- Blog teasers / testimonials / promos -->
+<section aria-label="Promos & Social Proof">
+  <header><h2>Promos, Testimonials & Blog</h2></header>
+  <div class="grid" style="grid-template-columns:2fr 1.1fr 1.1fr; gap:1rem">
+    <article class="card">
+      <div class="content">
+        <div class="title">Limited‑time Bundle Deals</div>
+        <p class="helper">Save up to 30% when you bundle tees + chinos + accessories.</p>
+        <button class="btn small" data-cta="promo">Shop Bundle Deals</button>
+      </div>
+    </article>
+    <article class="card">
+      <div class="content">
+        <div class="title">Customer Story</div>
+        <blockquote class="helper">“Fit is excellent, fabric is dreamy, and shipping was lightning fast!” — <strong>Asha K.</strong></blockquote>
+        <div class="row"><span class="pill">★★★★★</span><span class="pill">2,341 reviews</span></div>
+      </div>
+    </article>
+    <article class="card">
+      <div class="content">
+        <div class="title">From the Blog</div>
+        <p class="helper">How to build a capsule wardrobe that works for every season.</p>
+        <button class="btn small ghost">Read Guide</button>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- Order tracking / Returns / Help center modals (triggers) -->
+<section aria-label="Support actions">
+  <header><h2>Need help?</h2></header>
+  <div class="row">
+    <button class="btn secondary" id="openTracking">Track Order</button>
+    <button class="btn secondary" id="openReturns">Returns & Refunds</button>
+    <button class="btn secondary" id="openHelp">Contact & Help Center</button>
+  </div>
+</section>
+
+<!-- Auth: login/register/reset with real captcha + optional 2FA field -->
+<section aria-label="Account">
+  <header><h2>Account</h2></header>
+  <div class="auth-grid">
+    <form id="formLogin" class="card" aria-labelledby="loginTitle">
+      <div class="content">
+        <div class="title" id="loginTitle">Login</div>
+        <div class="field"><label for="loginEmail">Email</label><input id="loginEmail" type="email" required autocomplete="username"/></div>
+        <div class="field"><label for="loginPass">Password</label><input id="loginPass" type="password" required autocomplete="current-password"/></div>
+        <div class="row" style="align-items:center; justify-content:space-between">
+          <label class="row" style="align-items:center; gap:.35rem"><input type="checkbox" id="chk2FA"/> Enable 2FA</label>
+          <a href="#" id="linkReset">Forgot password?</a>
+        </div>
+        <div id="twoFAWrap" class="field" style="display:none"><label for="login2FA">2FA Code</label><input id="login2FA" inputmode="numeric" pattern="[0-9]{6}" placeholder="6‑digit code"/></div>
+        <div class="row" style="align-items:center; gap:.6rem">
+          <div id="captchaLogin" class="badge" aria-live="polite"></div>
+          <input id="captchaLoginInput" aria-label="Captcha answer" class="pill" style="background:#0c1738; border:1px solid #2a3b6e; padding:.45rem .6rem" placeholder="Solve"/>
+        </div>
+        <div class="row" style="margin-top:.6rem">
+          <button class="btn" type="submit">Sign In</button>
+          <button class="btn ghost" id="btnLoginWithOtp" type="button">Login with OTP</button>
+        </div>
+      </div>
+    </form>
+    <form id="formRegister" class="card" aria-labelledby="registerTitle">
+      <div class="content">
+        <div class="title" id="registerTitle">Register</div>
+        <div class="field"><label for="regName">Full Name</label><input id="regName" required/></div>
+        <div class="field"><label for="regEmail">Email</label><input id="regEmail" type="email" required autocomplete="email"/></div>
+        <div class="field"><label for="regPass">Password</label><input id="regPass" type="password" minlength="8" required autocomplete="new-password"/></div>
+        <div class="row" style="align-items:center; gap:.6rem">
+          <div id="captchaReg" class="badge" aria-live="polite"></div>
+          <input id="captchaRegInput" aria-label="Captcha answer" class="pill" style="background:#0c1738; border:1px solid #2a3b6e; padding:.45rem .6rem" placeholder="Solve"/>
+        </div>
+        <button class="btn" type="submit" style="margin-top:.6rem">Create Account</button>
+      </div>
+    </form>
+    <form id="formReset" class="card" aria-labelledby="resetTitle">
+      <div class="content">
+        <div class="title" id="resetTitle">Password Reset</div>
+        <div class="field"><label for="resetEmail">Email</label><input id="resetEmail" type="email" required/></div>
+        <div class="row" style="align-items:center; gap:.6rem">
+          <div id="captchaReset" class="badge" aria-live="polite"></div>
+          <input id="captchaResetInput" aria-label="Captcha answer" class="pill" style="background:#0c1738; border:1px solid #2a3b6e; padding:.45rem .6rem" placeholder="Solve"/>
+        </div>
+        <button class="btn" type="submit" style="margin-top:.6rem">Send Reset Link</button>
+      </div>
+    </form>
+  </div>
+  <p class="section-note">Security & privacy: passwords are hashed locally for demo. For production, use server‑side hashing, HTTPS, proven auth flows, payments via PCI‑compliant gateways, rate‑limits, and real CAPTCHA.</p>
+</section>
+
+<!-- Newsletter + Trust badges -->
+<section aria-label="Newsletter & Trust">
+  <header><h2>Stay in the loop</h2></header>
+  <form id="formNewsletter" class="row" aria-label="Newsletter signup">
+    <label for="newsletterEmail" class="sr-only">Email</label>
+    <input id="newsletterEmail" type="email" placeholder="you@example.com" required style="flex:1; padding:.8rem; border-radius:.9rem; border:1px solid #24335f; background:#0c1738; color:var(--text)"/>
+    <button class="btn" type="submit">Sign Up</button>
+    <span class="pill" aria-live="polite" id="newsletterMsg" style="align-self:center"></span>
+  </form>
+  <div class="trust" aria-label="Trust badges" style="margin-top:.8rem">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa"/>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Mastercard-logo.png" alt="Mastercard"/>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/PayPal.svg" alt="PayPal"/>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/PCI_SSC_Logo.svg" alt="PCI DSS"/>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/6/64/Ssl_open_lock.png" alt="SSL Secure"/>
+  </div>
+</section>
+
+  </main>  <!-- Product Modal (structure requested) -->  <div class="product-modal" id="productModal" role="dialog" aria-modal="true" aria-labelledby="pmTitle">
+    <div class="modal-content">
+      <button class="close-btn" id="modalClose" aria-label="Close">&times;</button>
+      <div class="modal-inner">
+        <div class="modal-left" id="modalLeft">
+          <div class="viewer" id="viewer"><img src="" alt="Product image" id="viewerImg"></div>
+          <div class="thumbs" id="viewerThumbs"></div>
+          <div class="related-carousel" id="relatedCarousel"><!-- related items -->
+            <div class="row" style="align-items:center; justify-content:space-between"><strong>Related products</strong>
+              <div class="carousel-controls">
+                <button id="relPrev" aria-label="Previous">◀</button>
+                <button id="relNext" aria-label="Next">▶</button>
+              </div>
+            </div>
+            <div class="carousel-row" id="relRow"></div>
+          </div>
+        </div>
+        <div class="modal-right" id="modalRight">
+          <div class="title" id="pmTitle">Product title</div>
+          <div class="row" style="align-items:center; justify-content:space-between">
+            <div class="price" id="pmPrice">$0.00</div>
+            <div id="pmRating" class="pill">★★★★★</div>
+          </div>
+          <div class="chips" id="pmBadges"></div>
+          <p id="pmShort"></p>
+          <div class="variant-row" id="pmVariants"></div>
+          <div class="row" style="align-items:center; gap:.6rem; margin-top:.5rem">
+            <div class="qty"><label for="pmQty">Qty</label><input id="pmQty" type="number" value="1" min="1"/></div>
+            <button class="btn" id="pmAddCart">Add to Cart</button>
+            <button class="btn secondary" id="pmWish">❤ Wishlist</button>
+            <button class="btn ghost" id="pmBuyNow">Buy Now</button>
+          </div>
+          <details class="accordion" open>
+            <summary>Shipping & Returns</summary>
+            <div class="inner policy">Free shipping over $50. Easy 30‑day returns. Duties & taxes included where applicable.</div>
+          </details>
+          <details class="accordion" style="margin-top:.6rem" open>
+            <summary>Product description</summary>
+            <div class="inner" id="pmDesc">
+              <!-- 500+ words injected via JS per product -->
+            </div>
+          </details><!-- Recently viewed -->
+      <details class="accordion" style="margin-top:.6rem" open>
+        <summary>Recently viewed</summary>
+        <div class="inner">
+          <div class="carousel-row" id="recentRow" style="gap:.4rem"></div>
+        </div>
+      </details>
+
+      <!-- Similar products -->
+      <details class="accordion" style="margin-top:.6rem" open>
+        <summary>Similar products</summary>
+        <div class="inner">
+          <div class="carousel-row" id="similarRow" style="gap:.4rem"></div>
+        </div>
+      </details>
+
+      <!-- Customer reviews -->
+      <div class="reviews"><h3>Reviews</h3>
+        <div id="reviewList"></div>
+        <textarea id="reviewInput" placeholder="Write a review..." style="width:100%;margin-top:.5rem"></textarea>
+        <button id="submitReview" class="btn btn-primary" style="margin-top:.25rem">Submit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  </div>  <!-- Support Modals (basic) -->  <div class="product-modal" id="supportModal" role="dialog" aria-modal="true" aria-labelledby="supportTitle">
+    <div class="modal-content">
+      <button class="close-btn" id="supportClose" aria-label="Close">&times;</button>
+      <div class="modal-inner" style="grid-template-columns:1fr">
+        <div>
+          <h3 id="supportTitle">Support Center</h3>
+          <details class="accordion" open>
+            <summary>Order Tracking</summary>
+            <div class="inner">
+              <form id="formTrack" class="row">
+                <input id="trackId" placeholder="Order ID" class="pill" style="background:#0c1738; border:1px solid #2a3b6e; padding:.6rem .8rem"/>
+                <button class="btn" type="submit">Track</button>
+                <span id="trackMsg" class="pill"></span>
+              </form>
+              <div id="trackTimeline" class="grid" style="grid-template-columns:repeat(4,1fr); gap:.6rem; margin-top:.6rem"></div>
+            </div>
+          </details>
+          <details class="accordion" style="margin-top:.6rem">
+            <summary>Returns & Refunds</summary>
+            <div class="inner">
+              <p class="helper">Start a return within 30 days. Refunds are processed to your original payment method.</p>
+              <form id="formReturn" class="row">
+                <input id="retOrder" placeholder="Order ID" class="pill"/>
+                <input id="retReason" placeholder="Reason" class="pill"/>
+                <button class="btn" type="submit">Request Return</button>
+                <span id="retMsg" class="pill"></span>
+              </form>
+            </div>
+          </details>
+          <details class="accordion" style="margin-top:.6rem">
+            <summary>Contact & Help</summary>
+            <div class="inner">
+              <form id="formHelp" class="row">
+                <input id="helpEmail" type="email" placeholder="you@example.com" class="pill"/>
+                <input id="helpMsg" placeholder="How can we help?" class="pill"/>
+                <button class="btn" type="submit">Send</button>
+                <span id="helpAck" class="pill"></span>
+              </form>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </div>  <!-- Toast -->  <div class="toast" id="toast" role="status" aria-live="polite"></div>  <footer role="contentinfo">
+    <div class="container">
+      <div class="row" style="justify-content:space-between; align-items:center">
+        <div>© <span id="year"></span> ShopPlus • <a href="#">Privacy</a> • <a href="#">Terms</a> • <a href="#">Accessibility</a></div>
+        <div class="row">
+          <span class="pill">SSL Encrypted</span>
+          <span class="pill">Secure Checkout</span>
+          <span class="pill">PCI‑Ready</span>
+        </div>
+      </div>
+    </div>
+  </footer>  <script>
+  /* =============================
+     MOCK BACKEND (Single‑file demo)
+     - Product, User, Order, Review storage via localStorage
+     - Async API‑like methods
+     ============================= */
+  const DB_KEYS = { products:'sp_products', users:'sp_users', orders:'sp_orders', reviews:'sp_reviews', wishlist:'sp_wishlist', cart:'sp_cart', recent:'sp_recent', newsletter:'sp_news' };
+
+  const Util = {
+    uid: (p='') => p + Math.random().toString(36).slice(2,9),
+    nowISO: () => new Date().toISOString(),
+    money: (n) => `$${Number(n).toFixed(2)}`,
+    hash: async (text) => {
+      const data = new TextEncoder().encode(text);
+      const digest = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    },
+    read:(k,def)=>{try{return JSON.parse(localStorage.getItem(k)) ?? def}catch{return def}},
+    write:(k,v)=>localStorage.setItem(k, JSON.stringify(v)),
+    push:(k,v)=>{const arr=Util.read(k,[]); arr.push(v); Util.write(k,arr); return arr;},
+    toast:(msg)=>{const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2300)},
+    clamp:(n,min,max)=>Math.max(min, Math.min(max, n)),
+    lorem: () => `This product is crafted for real life: durable stitching, breathable modern fabrics, and a silhouette designed to move with you. It balances performance and polish, so you look sharp at the office, feel relaxed at the weekend, and stay comfortable when the temperature swings. Subtle details like reinforced seams, smooth YKK zippers, and clean interior binding make it feel premium without shouting. We rigorously test for colorfastness and pilling to ensure it stays fresh wash after wash.\n\nSustainability matters here. We prioritize low‑impact dyeing, recycled trims, and certified mills that pay living wages. Packaging is fully recyclable and sized to reduce shipping emissions. We work with third‑party auditors to validate responsible sourcing.\n\nCare is simple: machine wash cold, tumble dry low, wear often. Fit is true to size with an easy drape; if you’re between sizes, order up for a relaxed feel or down for a tailored look. Pair it with sneakers for a casual day or leather boots to dress it up.\n\nWhat customers say: they love the balance of softness and structure, the thoughtful pockets, and the way the fabric resists wrinkles on long days. We back every purchase with a 30‑day trial and a two‑year warranty against defects. If it’s not right, returns are quick and free.\n\nWhether you’re commuting, traveling, or chasing weekend plans, this piece earns its place in your rotation. It’s the reliable favorite you reach for without thinking—made responsibly, priced fairly, and built to last.`.repeat(2)
+  };
+
+  const API = {
+    async initProducts(){
+      if(Util.read(DB_KEYS.products, null)) return;
+      const seedCats=['jackets','sneakers','tshirts','accessories'];
+      const items=Array.from({length:40}, (_,i)=>{
+        const cat=seedCats[i%seedCats.length];
+        const id = 'p'+(i+1);
+        const price = 25 + (i%8)*10 + ((i%3)*3);
+        const discount = (i%5===0)? 15: (i%9===0? 25: 0);
+        const likes = Math.floor(50 + Math.random()*900);
+        const sales = Math.floor(20 + Math.random()*1200);
+        const rating = (3.5 + Math.random()*1.5).toFixed(1);
+        const addedDate = new Date(Date.now() - (i*24*3600*1000)).toISOString();
+        const images = [
+          `https://picsum.photos/seed/${id}a/800/600`,
+          `https://picsum.photos/seed/${id}b/800/600`,
+          `https://picsum.photos/seed/${id}c/800/600`
+        ];
+        return {id, title:`${cat.charAt(0).toUpperCase()+cat.slice(1)} ${i+1}`, price, discount, likes, sales, rating: Number(rating), addedDate, category:cat, tags:[cat, i%2?'men':'women'], variants:{ sizes:['XS','S','M','L','XL'], colors:['Black','Navy','Olive','Gray'] }, images, short:`Versatile ${cat} made to move with you.`, description: Util.lorem() };
+      });
+      Util.write(DB_KEYS.products, items);
+    },
+    async listProducts(){ return Util.read(DB_KEYS.products, []) },
+    async findProduct(id){ return (await API.listProducts()).find(p=>p.id===id) },
+
+    // Users
+    async register({name,email,password}){
+      const users = Util.read(DB_KEYS.users, []);
+      if(users.find(u=>u.email===email)) throw new Error('Email already registered');
+      const hash = await Util.hash(password);
+      const user = {id:Util.uid('u_'), name, email, hash, createdAt:Util.nowISO(), twoFA:false};
+      users.push(user); Util.write(DB_KEYS.users, users); return {ok:true, user:{id:user.id, name:user.name, email:user.email}};
+    },
+    async login({email,password, code}){
+      const users = Util.read(DB_KEYS.users, []);
+      const u = users.find(u=>u.email===email);
+      if(!u) throw new Error('No account for this email');
+      const ok = (await Util.hash(password))===u.hash;
+      if(!ok) throw new Error('Invalid credentials');
+      if(u.twoFA && code!==sessionStorage.getItem('otp_'+email)) throw new Error('2FA required / invalid code');
+      return {ok:true, user:{id:u.id, name:u.name, email:u.email}};
+    },
+    async toggle2FA(email, enabled){
+      const users = Util.read(DB_KEYS.users, []);
+      const u = users.find(u=>u.email===email); if(!u) throw new Error('User not found'); u.twoFA=enabled; Util.write(DB_KEYS.users, users); return {ok:true}
+    },
+
+    // Orders (very basic)
+    async createOrder({items, email}){
+      const orders = Util.read(DB_KEYS.orders, []);
+      const id = Util.uid('ord_');
+      const status = ['Placed','Packed','In Transit','Delivered'];
+      const now = Date.now();
+      const timeline = status.map((s,i)=>({ label:s, at:new Date(now+i*6*3600*1000).toISOString() }));
+      const order = {id, email, items, total: items.reduce((a,c)=>a+(c.price*c.qty),0), status:status[0], timeline};
+      orders.push(order); Util.write(DB_KEYS.orders, orders); return order;
+    },
+    async trackOrder(id){
+      const orders = Util.read(DB_KEYS.orders, []);
+      const o = orders.find(o=>o.id===id); if(!o) throw new Error('Order not found'); return o;
+    },
+
+    // Reviews
+    async listReviews(pid){ const all=Util.read(DB_KEYS.reviews, []); return all.filter(r=>r.pid===pid) },
+    async addReview({pid, text}){ const r={id:Util.uid('rv_'), pid, text, at:Util.nowISO()}; Util.push(DB_KEYS.reviews, r); return r; },
+
+    // Newsletter
+    async subscribe(email){ Util.push(DB_KEYS.newsletter, {email, at:Util.nowISO()}); return {ok:true} }
+  };
+
+  /* =============================
+     UI RENDERERS
+     ============================= */
+  const UI = (()=>{
+    const els = {
+      gridNew: document.getElementById('gridNew'),
+      gridBest: document.getElementById('gridBest'),
+      gridOffers: document.getElementById('gridOffers'),
+      gridLiked: document.getElementById('gridLiked'),
+      cartCount: document.getElementById('cartCount'),
+      wishCount: document.getElementById('wishCount'),
+      acList: document.getElementById('acList'),
+      q: document.getElementById('q')
+    };
+
+    function productCard(p){
+      const d = document.createElement('article');
+      d.className = 'p-card';
+      d.innerHTML = `
+        <div class="p-thumb hover-zoom"><img loading="lazy" src="${p.images[0]}" alt="${p.title}"></div>
+        <div class="p-body">
+          <div class="p-title">${p.title}</div>
+          <div class="p-meta"><span class="price">${Util.money(p.price*(1-p.discount/100))}</span> <span>${p.rating}★</span></div>
+          <div class="actions">
+            <button class="btn small" data-view="${p.id}">View</button>
+            <button class="btn small secondary" data-add="${p.id}">Add</button>
+            <button class="btn small ghost" data-wish="${p.id}">❤</button>
+          </div>
+        </div>`;
+      return d;
+    }
+
+    function mountGrid(el, items){ el.innerHTML=''; items.slice(0,10).forEach(p=>el.appendChild(productCard(p))); }
+
+    function syncCounts(){
+      const cart = Util.read(DB_KEYS.cart, []); els.cartCount.textContent = cart.reduce((a,c)=>a+c.qty,0);
+      const wish = Util.read(DB_KEYS.wishlist, []); els.wishCount.textContent = wish.length;
+    }
+
+    function autocomplete(products){
+      const q=els.q; const box=els.acList;
+      function suggest(v){
+        const term=v.trim().toLowerCase();
+        if(!term){ box.style.display='none'; return; }
+        const list = products.filter(p=>p.title.toLowerCase().includes(term) || p.category.includes(term)).slice(0,8);
+        box.innerHTML = list.map(p=>`<button role="option" data-sel="${p.id}">${p.title} • ${Util.money(p.price)}</button>`).join('');
+        box.style.display='block'; q.setAttribute('aria-expanded','true');
+      }
+      q.addEventListener('input', e=>suggest(q.value));
+      box.addEventListener('click', e=>{const id=e.target.closest('button')?.dataset.sel; if(!id) return; openModal(id); box.style.display='none';})
+      document.addEventListener('click', e=>{ if(!box.contains(e.target) && e.target!==q){ box.style.display='none'; q.setAttribute('aria-expanded','false'); }});
+    }
+
+    return { mountGrid, syncCounts, autocomplete };
+  })();
+
+  /* =============================
+     PRODUCT MODAL
+     ============================= */
+  let CURRENT_PRODUCT = null;
+  async function openModal(id){
+    const p = await API.findProduct(id); if(!p) return;
+    CURRENT_PRODUCT = p;
+    // recently viewed
+    const rv = Util.read(DB_KEYS.recent, []); Util.write(DB_KEYS.recent, [{id:p.id, title:p.title, price:p.price, img:p.images[0]}].concat(rv.filter(x=>x.id!==p.id)).slice(0,20));
+
+    const modal=document.getElementById('productModal');
+    const viewerImg=document.getElementById('viewerImg');
+    const thumbs=document.getElementById('viewerThumbs');
+    const pmTitle=document.getElementById('pmTitle');
+    const pmPrice=document.getElementById('pmPrice');
+    const pmRating=document.getElementById('pmRating');
+    const pmBadges=document.getElementById('pmBadges');
+    const pmShort=document.getElementById('pmShort');
+    const pmVariants=document.getElementById('pmVariants');
+    const pmDesc=document.getElementById('pmDesc');
+
+    viewerImg.src=p.images[0];
+    thumbs.innerHTML=''; p.images.forEach((src,i)=>{ const im=document.createElement('img'); im.src=src; im.alt=p.title+' thumbnail'; if(i===0) im.classList.add('active'); im.addEventListener('click',()=>{ viewerImg.src=src; [...thumbs.children].forEach(t=>t.classList.remove('active')); im.classList.add('active');}); thumbs.appendChild(im); });
+    pmTitle.textContent=p.title;
+    pmPrice.textContent = (p.discount? `${Util.money(p.price*(1-p.discount/100))} <span class="pill" style="margin-left:.4rem">-${p.discount}%</span>`: Util.money(p.price));
+    pmRating.textContent = `${p.rating}★`;
+    pmBadges.innerHTML = `<span class="pill">${p.category}</span> <span class="pill">${p.tags.join(', ')}</span>`;
+    pmShort.textContent = p.short;
+
+    // Variants
+    pmVariants.innerHTML = '';
+    const sizeWrap=document.createElement('div'); sizeWrap.className='row'; sizeWrap.innerHTML='<strong>Size:</strong>'; p.variants.sizes.forEach(s=>{ const b=document.createElement('button'); b.className='variant'; b.textContent=s; b.addEventListener('click',()=>{ [...sizeWrap.querySelectorAll('.variant')].forEach(x=>x.style.outline='none'); b.style.outline='2px solid var(--brand)'; sizeWrap.dataset.sel=s;}); sizeWrap.appendChild(b);}); pmVariants.appendChild(sizeWrap);
+    const colorWrap=document.createElement('div'); colorWrap.className='row'; colorWrap.innerHTML='<strong>Color:</strong>'; p.variants.colors.forEach(c=>{ const b=document.createElement('button'); b.className='variant'; b.textContent=c; b.addEventListener('click',()=>{ [...colorWrap.querySelectorAll('.variant')].forEach(x=>x.style.outline='none'); b.style.outline='2px solid var(--brand)'; colorWrap.dataset.sel=c;}); colorWrap.appendChild(b);}); pmVariants.appendChild(colorWrap);
+
+    // 500+ words description
+    pmDesc.textContent = p.description;
+
+    // Related (same category)
+    const all = await API.listProducts();
+    const related = all.filter(x=>x.category===p.category && x.id!==p.id).slice(0,12);
+    const relRow=document.getElementById('relRow'); relRow.innerHTML='';
+    related.forEach(r=>{ const it=document.createElement('div'); it.className='carousel-item'; it.innerHTML=`<img src="${r.images[0]}" alt="${r.title}"><div class="p-body"><div class="p-title" style="padding:.4rem">${r.title}</div></div>`; it.addEventListener('click',()=>openModal(r.id)); relRow.appendChild(it); });
+
+    // Recently viewed
+    const rr=document.getElementById('recentRow'); rr.innerHTML=''; Util.read(DB_KEYS.recent, []).forEach(rc=>{ const it=document.createElement('div'); it.className='carousel-item'; it.style.minWidth='150px'; it.innerHTML=`<img src="${rc.img}" alt="${rc.title}"><div class="p-body" style="padding:.4rem"><div class="p-title" style="font-size:.85rem">${rc.title}</div><div class="price">${Util.money(rc.price)}</div></div>`; it.addEventListener('click',()=>openModal(rc.id)); rr.appendChild(it); });
+
+    // Similar (shared tags)
+    const sim=document.getElementById('similarRow'); sim.innerHTML=''; all.filter(x=>x.id!==p.id && x.tags.some(t=>p.tags.includes(t))).slice(0,12).forEach(s=>{ const it=document.createElement('div'); it.className='carousel-item'; it.innerHTML=`<img src="${s.images[0]}" alt="${s.title}"><div class="p-body" style="padding:.4rem"><div class="p-title" style="font-size:.85rem">${s.title}</div></div>`; it.addEventListener('click',()=>openModal(s.id)); sim.appendChild(it); });
+
+    // Reviews
+    const list=document.getElementById('reviewList'); list.innerHTML='Loading…'; const items=await API.listReviews(p.id); list.innerHTML=''; if(items.length===0){ list.innerHTML='<div class="helper">No reviews yet. Be the first!</div>'; } else { items.forEach(r=>{ const d=document.createElement('div'); d.className='review'; d.innerHTML=`<div style="font-size:.85rem; color:#9fb5ef">${new Date(r.at).toLocaleString()}</div><div>${r.text}</div>`; list.appendChild(d); }); }
+
+    document.getElementById('submitReview').onclick = async ()=>{ const txt=document.getElementById('reviewInput').value.trim(); if(!txt) return; await API.addReview({pid:p.id, text:txt}); Util.toast('Thanks for your review!'); openModal(p.id); };
+
+    // Add / Wish / Buy
+    document.getElementById('pmAddCart').onclick=()=>{ const qty=Number(document.getElementById('pmQty').value)||1; const cart=Util.read(DB_KEYS.cart, []); const idx=cart.findIndex(i=>i.id===p.id); if(idx>-1){ cart[idx].qty += qty; } else { cart.push({id:p.id, title:p.title, price:p.price*(1-p.discount/100), qty}); } Util.write(DB_KEYS.cart, cart); UI.syncCounts(); Util.toast('Added to cart'); };
+    document.getElementById('pmWish').onclick=()=>{ const wish=Util.read(DB_KEYS.wishlist, []); if(!wish.find(w=>w.id===p.id)){ wish.push({id:p.id, title:p.title}); Util.write(DB_KEYS.wishlist, wish); UI.syncCounts(); Util.toast('Added to wishlist'); }else{ Util.toast('Already in wishlist'); }};
+    document.getElementById('pmBuyNow').onclick=async()=>{ const order=await API.createOrder({items:[{id:p.id, price:p.price*(1-p.discount/100), qty:1}], email:'guest@example.com'}); Util.toast('Order placed: '+order.id); };
+
+    // Carousel controls (basic scroll)
+    document.getElementById('relPrev').onclick=()=>{ document.getElementById('relRow').scrollBy({left:-300, behavior:'smooth'}); };
+    document.getElementById('relNext').onclick=()=>{ document.getElementById('relRow').scrollBy({left:300, behavior:'smooth'}); };
+
+    modal.classList.add('open');
+  }
+
+  function closeModal(){ document.getElementById('productModal').classList.remove('open'); }
+
+  /* =============================
+     HERO SLIDER (looping, accessible)
+     ============================= */
+  const heroImages=[11,12,13,14].map(n=>`https://picsum.photos/1200/675?random=${n}`);
+  let heroIdx=0, heroTimer=null;
+  function startHero(){ const im=document.getElementById('heroImg'); function step(){ heroIdx=(heroIdx+1)%heroImages.length; im.src=heroImages[heroIdx]; } heroTimer=setInterval(step, 4000); im.addEventListener('focus', ()=>clearInterval(heroTimer)); im.addEventListener('blur', ()=>startHero()); }
+
+  /* =============================
+     AUTH + CAPTCHA + 2FA (demo)
+     ============================= */
+  function makeCaptcha(){ const a=1+Math.floor(Math.random()*9), b=1+Math.floor(Math.random()*9); return {q:`Solve: ${a}+${b}=?`, ans:String(a+b)} }
+  function placeCaptcha(idBox,idInput){ const box=document.getElementById(idBox), inp=document.getElementById(idInput); const c=makeCaptcha(); box.textContent=c.q; box.dataset.ans=c.ans; inp.value=''; }
+
+  async function setupAuth(){
+    placeCaptcha('captchaLogin','captchaLoginInput'); placeCaptcha('captchaReg','captchaRegInput'); placeCaptcha('captchaReset','captchaResetInput');
+    document.getElementById('linkReset').onclick=(e)=>{e.preventDefault(); document.getElementById('formReset').scrollIntoView({behavior:'smooth'});};
+    document.getElementById('chk2FA').addEventListener('change', (e)=>{ document.getElementById('twoFAWrap').style.display = e.target.checked? 'grid':'none'; });
+
+    // Register
+    document.getElementById('formRegister').addEventListener('submit', async (e)=>{
+      e.preventDefault(); const name=regName.value.trim(), email=regEmail.value.trim(), pass=regPass.value; if(captchaReg.dataset.ans!==captchaRegInput.value.trim()) return Util.toast('Captcha failed');
+      try{ await API.register({name,email,password:pass}); Util.toast('Account created! You can now log in.'); placeCaptcha('captchaReg','captchaRegInput'); }
+      catch(err){ Util.toast(err.message); }
+    });
+
+    // Login (with optional 2FA)
+    document.getElementById('btnLoginWithOtp').onclick=()=>{ const email=loginEmail.value.trim(); if(!email) return Util.toast('Enter email first'); const code=String(Math.floor(100000+Math.random()*900000)); sessionStorage.setItem('otp_'+email, code); Util.toast('OTP (demo): '+code); document.getElementById('twoFAWrap').style.display='grid'; };
+    document.getElementById('formLogin').addEventListener('submit', async (e)=>{
+      e.preventDefault(); const email=loginEmail.value.trim(), pass=loginPass.value, code=login2FA.value.trim(); if(captchaLogin.dataset.ans!==captchaLoginInput.value.trim()) return Util.toast('Captcha failed');
+      try{ const r=await API.login({email,password:pass, code}); Util.toast('Welcome back, '+r.user.name||'friend'); placeCaptcha('captchaLogin','captchaLoginInput'); await API.toggle2FA(email, document.getElementById('chk2FA').checked); }
+      catch(err){ Util.toast(err.message); }
+    });
+
+    // Reset
+    document.getElementById('formReset').addEventListener('submit', async (e)=>{ e.preventDefault(); if(captchaReset.dataset.ans!==captchaResetInput.value.trim()) return Util.toast('Captcha failed'); Util.toast('If the email exists, a reset link has been sent.'); placeCaptcha('captchaReset','captchaResetInput'); });
+  }
+
+  /* =============================
+     SUPPORT MODALS
+     ============================= */
+  function openSupport(which){ const m=document.getElementById('supportModal'); m.classList.add('open'); if(which==='track') document.getElementById('trackId').focus(); }
+  function closeSupport(){ document.getElementById('supportModal').classList.remove('open'); }
+
+  function setupSupport(){
+    document.getElementById('openTracking').onclick=()=>openSupport('track');
+    document.getElementById('openReturns').onclick=()=>openSupport('returns');
+    document.getElementById('openHelp').onclick=()=>openSupport('help');
+    document.getElementById('supportClose').onclick=closeSupport;
+
+    document.getElementById('formTrack').addEventListener('submit', async (e)=>{e.preventDefault(); const id=trackId.value.trim(); try{ const o=await API.trackOrder(id); trackMsg.textContent='Found'; const cont=document.getElementById('trackTimeline'); cont.innerHTML=''; o.timeline.forEach(t=>{ const d=document.createElement('div'); d.className='card'; d.innerHTML=`<div class="content"><div class="title">${t.label}</div><div class="helper">${new Date(t.at).toLocaleString()}</div></div>`; cont.appendChild(d); }); }catch(err){ trackMsg.textContent=err.message; }});
+    document.getElementById('formReturn').addEventListener('submit', (e)=>{e.preventDefault(); retMsg.textContent='Return initiated. Check email.'});
+    document.getElementById('formHelp').addEventListener('submit', (e)=>{e.preventDefault(); helpAck.textContent='Message received. We will reply soon.'});
+  }
+
+  /* =============================
+     NEWSLETTER
+     ============================= */
+  function setupNewsletter(){ document.getElementById('formNewsletter').addEventListener('submit', async (e)=>{ e.preventDefault(); try{ await API.subscribe(newsletterEmail.value.trim()); newsletterMsg.textContent='Subscribed!'; } catch { newsletterMsg.textContent='Try again'; } }); }
+
+  /* =============================
+     SECTION RENDERING (hooks)
+     Most Liked / Best Sellers / New Arrivals / Special Offers
+     ============================= */
+  async function renderSections(){
+    const all = await API.listProducts();
+    const newArr = [...all].sort((a,b)=> new Date(b.addedDate)-new Date(a.addedDate));
+    const best = [...all].sort((a,b)=> b.sales-a.sales);
+    const liked = [...all].sort((a,b)=> b.likes-a.likes);
+    const offers = all.filter(p=>p.discount>0).sort((a,b)=> b.discount-a.discount);
+    UI.mountGrid(gridNew, newArr);
+    UI.mountGrid(gridBest, best);
+    UI.mountGrid(gridOffers, offers);
+    UI.mountGrid(gridLiked, liked);
+  }
+
+  /* =============================
+     EVENTS on product grids
+     ============================= */
+  function setupDelegates(){
+    document.body.addEventListener('click', async (e)=>{
+      const view = e.target.closest('[data-view]'); if(view){ openModal(view.dataset.view); return; }
+      const add = e.target.closest('[data-add]'); if(add){ const p=await API.findProduct(add.dataset.add); const cart=Util.read(DB_KEYS.cart, []); const idx=cart.findIndex(i=>i.id===p.id); if(idx>-1) cart[idx].qty++; else cart.push({id:p.id,title:p.title,price:p.price*(1-p.discount/100),qty:1}); Util.write(DB_KEYS.cart, cart); Util.toast('Added to cart'); UI.syncCounts(); return; }
+      const wish = e.target.closest('[data-wish]'); if(wish){ const p=await API.findProduct(wish.dataset.wish); const wl=Util.read(DB_KEYS.wishlist, []); if(!wl.find(w=>w.id===p.id)){ wl.push({id:p.id,title:p.title}); Util.write(DB_KEYS.wishlist, wl); Util.toast('Wishlisted'); UI.syncCounts(); } return; }
+      const cat = e.target.closest('[data-cta="cat"]'); if(cat){ e.preventDefault(); Util.toast('Filter: '+cat.dataset.cat); document.getElementById('q').value = cat.dataset.cat; const evt = new Event('input'); document.getElementById('q').dispatchEvent(evt); window.scrollTo({top:0, behavior:'smooth'}); return; }
+    });
+
+    // Modal closers
+    document.getElementById('modalClose').onclick=closeModal; document.getElementById('productModal').addEventListener('click', e=>{ if(e.target.id==='productModal') closeModal(); });
+  }
+
+  /* =============================
+     INIT
+     ============================= */
+  (async function init(){
+    document.getElementById('year').textContent = new Date().getFullYear();
+    await API.initProducts();
+    const products = await API.listProducts();
+    UI.autocomplete(products);
+    renderSections();
+    UI.syncCounts();
+    setupDelegates();
+    setupNewsletter();
+    setupAuth();
+    setupSupport();
+    startHero();
+  })();
+  </script></body>
+</html>
